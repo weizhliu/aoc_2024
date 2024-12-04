@@ -1,0 +1,44 @@
+<!-- livebook:{"hub_id":"team-weiz"} -->
+
+# Day03
+
+## Section
+
+```elixir
+defmodule Day03 do
+  def mul(a, b), do: a * b
+  def eval_mul(list) do
+    list
+    |> Enum.map(&("Day03." <> &1))
+    |> Enum.join(" + ")
+    |> Code.eval_string()
+    |> elem(0)
+  end
+
+  def part1(input) do
+    Regex.scan(~r/mul\(\d{1,3}\,\d{1,3}\)/, input)
+    |> Enum.map(&hd/1)
+    |> eval_mul()
+  end
+
+  def part2(input) do
+    Regex.scan(~r/mul\(\d{1,3}\,\d{1,3}\)|don\'t\(\)|do\(\)/, input)
+    |> Enum.map(&hd/1)
+    |> Enum.reduce({:do, []}, fn
+      "do()", {_, accu} -> {:do, accu}
+      "don't()", {_, accu} -> {:dont, accu}
+      hd, {:do, accu} -> {:do, [hd | accu]}
+      _, {:dont, accu} -> {:dont, accu}
+    end)
+    |> elem(1)
+    |> eval_mul()
+  end
+end
+
+example1 = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"
+Day03.part1(example1)
+example2 = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
+Day03.part2(example2)
+```
+
+<!-- livebook:{"offset":967,"stamp":{"token":"XCP.6zbwGhiQ-LO-yW8_8m5IN0GUvoETuceGrgW6gU2Z2DVy5BI-4pYF3uzm4eTT9g","token_signature":"MqWHtm_4ENKKddpml7vebengLGQrGBLNtdUvIdb4kBQ-4Q4OmY8OfnbMNsoK1DEANCARQwXJG5KW2HA-sAUoiFbaPFOMIJck6qqhF5hMgxnw5Ljtr18slkRrR9zbPf2G1HBnX-_872FCFLKhrJvBKU0q3GuwVwHj3V20kwLJGHsVilKD4eWKeYDXpM8hKTVjcAu4PPc6G-kZsqnq86G550DjeI6YJLy406OQhzK8_3yvEUXvhTwvGAZ69QzUOkU4yzspKMqmyzwNg5VmydqSCnddaY3pESOyppU8--U2fydxaTRJYuxTRf_ZOWKmwk0qYR9C3HbagZ9PdWT-hYX90g","version":1}} -->
