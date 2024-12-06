@@ -1,0 +1,125 @@
+<!-- livebook:{"hub_id":"team-weiz"} -->
+
+# Day 6
+
+## Section
+
+```elixir
+example = """
+....#.....
+.........#
+..........
+..#.......
+.......#..
+..........
+.#..^.....
+........#.
+#.........
+......#...
+"""
+```
+
+```elixir
+defmodule Day06 do
+  def part1(input) do
+    {start, map} = parse_input(input)
+
+    move(start, map, {0, -1}, [start])
+    |> Enum.uniq()
+    |> length()
+  end
+
+  def move(_, _map, :out, breads), do: breads
+  def move({x, y}, map, {xmove, ymove} = dir, breads) do
+    next = {x + xmove, y + ymove}
+
+    {next, dir, breads} =
+      case Map.get(map, next) do
+        "." -> {next, dir, [next | breads]}
+        "#" -> {{x, y}, next_dir(dir), breads}
+        nil -> {next, :out, breads}
+      end
+
+    move(next, map, dir, breads)
+  end
+
+  def parse_input(input) do
+    for {row, y} <- input |> String.split("\n", trim: true) |> Enum.with_index(),
+        {dot, x} <- row |> String.split("", trim: true) |> Enum.with_index(),
+        reduce: {nil, %{}} do
+      {start, map} ->
+        case dot do
+          "^" -> {{x, y}, Map.put(map, {x, y}, ".")}
+          dot -> {start, Map.put(map, {x, y}, dot)}
+        end
+    end
+  end
+
+  def next_dir({0, -1}), do: {1, 0}
+  def next_dir({1, 0}), do: {0, 1}
+  def next_dir({0, 1}), do: {-1, 0}
+  def next_dir({-1, 0}), do: {0, -1}
+end
+
+Day06.part1(example)
+```
+
+```elixir
+defmodule Day06P2 do
+  def part2(input) do
+    {start, map} = parse_input(input)
+
+    for {position, "."} <- map,
+        position != start,
+        :loop == move(start, Map.put(map, position, "#"), {0, -1}, %{}),
+        reduce: 0 do
+      accu -> accu + 1
+    end
+  end
+
+  def move(_, _map, _, :loop), do: :loop
+  def move(_, _map, :out, _), do: :out
+
+  def move({x, y}, map, {xmove, ymove} = dir, turns) do
+    next = {x + xmove, y + ymove}
+
+    {next, dir, turns} =
+      case Map.get(map, next) do
+        "." -> {next, dir, turns}
+        "#" -> {{x, y}, next_dir(dir), check_turn(turns, {{x, y}, dir, next_dir(dir)})}
+        nil -> {next, :out, turns}
+      end
+
+    move(next, map, dir, turns)
+  end
+
+  def parse_input(input) do
+    for {row, y} <- input |> String.split("\n", trim: true) |> Enum.with_index(),
+        {dot, x} <- row |> String.split("", trim: true) |> Enum.with_index(),
+        reduce: {nil, %{}} do
+      {start, map} ->
+        case dot do
+          "^" -> {{x, y}, Map.put(map, {x, y}, ".")}
+          dot -> {start, Map.put(map, {x, y}, dot)}
+        end
+    end
+  end
+
+  def next_dir({0, -1}), do: {1, 0}
+  def next_dir({1, 0}), do: {0, 1}
+  def next_dir({0, 1}), do: {-1, 0}
+  def next_dir({-1, 0}), do: {0, -1}
+
+  def check_turn(turns, turn) do
+    if Map.has_key?(turns, turn) do
+      :loop
+    else
+      Map.put(turns, turn, true)
+    end
+  end
+end
+
+Day06P2.part2(example)
+```
+
+<!-- livebook:{"offset":2745,"stamp":{"token":"XCP.j2qArLasTEtVVnl_hn09nsyLrvGgZ9xNsaE-ovjnyjIFHCDvjwlpxgIN8H-Ygw","token_signature":"kn-2k8kdoC61bh_BPo_ZNyKFhgqxOM78qjmje_pXPzG_Q_G8SBP7KMYNhwRKB5tjRmM1YXe0kKAqKcFG_P2nr0I91uHrvqsgEBRFqNm_GBi0EoFE6LhkGJ8QtLehgzDGxpl44rezEJbiQIcpXzPVl3YQSvqPL4Nj4HtWpCY8KRTY9FSFPAP5SPk6evEPblyu4kLrF2ZXtGqLvFAnEHY5Ae2pFBB9b2z5NUdKHFVOym2ppG8hnJsdcVpNdhKXFwcoQSU8YG_oohCFChMC4jEXe-n90tnKLI9_baUmq35DMJrrzGkVn2zvAC_TIoUCfU_Aa44P01CnqEPCIPaqSF9Prg","version":1}} -->
