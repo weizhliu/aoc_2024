@@ -1,0 +1,98 @@
+<!-- livebook:{"hub_id":"team-weiz"} -->
+
+# Day 05
+
+## Section
+
+```elixir
+example = """
+47|53
+97|13
+97|61
+97|47
+75|29
+61|13
+75|53
+29|13
+97|29
+53|29
+61|53
+97|53
+61|29
+47|13
+75|47
+97|75
+47|61
+75|61
+47|29
+75|13
+53|13
+
+75,47,61,53,29
+97,61,53,29,13
+75,29,13
+75,97,47,61,53
+61,13,29
+97,13,75,29,47
+"""
+```
+
+```elixir
+defmodule Day05 do
+  def part1(input) do
+    {map, rows} = parse_input(input)
+
+    rows
+    |> Enum.filter(&check_row(&1, map))
+    |> sum_middle()
+  end
+
+  def part2(input) do
+    {map, rows} = parse_input(input)
+
+    rows
+    |> Enum.reject(&check_row(&1, map))
+    |> Enum.map(fn row -> Enum.sort(row, &Map.has_key?(map, {&1, &2})) end)
+    |> sum_middle()
+  end
+
+  def parse_input(input) do
+    [raw_rules, raw_updates] = String.split(input, "\n\n", trim: true)
+
+    map =
+      raw_rules
+      |> String.split("\n", trim: true)
+      |> Map.new(
+        &{
+          String.split(&1, "|", trim: true) |> List.to_tuple(),
+          true
+        }
+      )
+
+    rows =
+      raw_updates
+      |> String.split("\n", trim: true)
+      |> Enum.map(&String.split(&1, ",", trim: true))
+
+    {map, rows}
+  end
+
+  def sum_middle(row) do
+    row
+    |> Enum.map(&Enum.at(&1, div(length(&1), 2)))
+    |> Enum.map(&String.to_integer/1)
+    |> Enum.sum()
+  end
+
+  def check_row([], _), do: true
+  def check_row([h | tail], map), do: check_items(h, tail, map) && check_row(tail, map)
+
+  def check_items(_c, [], _map), do: true
+  def check_items(c, [h | tail], map), do: Map.has_key?(map, {c, h}) && check_items(c, tail, map)
+end
+
+IO.puts(Day05.part1(example))
+IO.puts(Day05.part2(example))
+```
+
+<!-- livebook:{"offset":1596,"stamp":{"token":"XCP.3HG1xCR6NfvYMDH-N_fe5aL9fjob5dzecSLMweKX89Pv5QWtVyN_SsB9rptQDw","token_signature":"qFiNB6gFz34l-zysqmUI09YT_mhEGw56hopGGDxJRhaWVkPmI4m1kbhmRcqUWHp2sPxJWOYD16iC7Cz8-nvyxTc0h_w8uWigR97MymygJw71epa9YjQufIBTWi2zvxRDXWxwiPc1HOu_n7BokdKUFYVjvo3DiPAoueYOJB3CxPiNmXhr_AEPPbb-SLK0ZnRuNvPTleYt2HL0kkiT8Vvp1LEhy2lID-Eu3aPJ2ZZuy0V1l6goOZxO9wNh7eFGeqZAN7VwGURgLi-9KxcoVqQ_kNbzlqod7KD7lzpZ5EnYYGwzjqzy5aPh_i2w5n08X9Hr7w1UTEWWoTxF389W65u1zA","version":1}} -->

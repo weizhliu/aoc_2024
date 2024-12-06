@@ -71,4 +71,4 @@ Day04.part1(example)
 Day04.part2(example)
 ```
 
-<!-- livebook:{"offset":1452,"stamp":{"token":"XCP.YPrIL6GUo15Gcyep0C6apB68Y3MhnF5GOekOCMyPODi-HUsDj6y8GfTlHcBwcg","token_signature":"lcAJCZHeMfC7RYfxH01CGeeKDTT-nEVGb1bN9D9frDKbTAxmYQhfRn1e1FTDHUcAybKtVug75Q_p5cY7SESB-RJuc_J7PEcxy1aKPEaWP7vTScVdPvEPDIGkPYHHVIZALweV1XzKR3GEBZzTVl-i_iS8z_SbvlV-IwT-Dj5nakmBDde2XqmxNsQ0lcQXAB4U2ip7B6ufSdQ_TyWFaO-9RB3U98-GGpXtSp8NnxZaZN0OkzHAfgCk8acmKr-oUPUCSHcEbbH6Eh8wGJU-wL3op1e9K8opQ1aJT_VLx61HbdNLObvCBwBWuMmnhyAyAZGWykoSFu7XbHeABtKN5jpSng","version":1}} -->
+<!-- livebook:{"offset":1452,"stamp":{"token":"XCP.f_anXktTVXc69Ueqjsnt1lzgGzWBv8fKVvY4SUuFxmc92QOF7FsKVT1f3h1CHg","token_signature":"lQneOMU479TCxYij7YoSLNUIa6Jz5QQyivMKqiMsWiOIeq3LzOHsHqrJ5KL2z6RoEYsepEnsz87O565H1tNAWDqiItXV_9bPdMrj31eAwxlr7lj8CLw_JtMW_Izw9x1SBrUDdmaWWlUfqyax9X1nhtCLAXIbpbWKAdm8ewG8l6aMSLkzksL1icdso4VHtJnj6vaDZJj_I-QMr5GUK_RLY6fFYEwhFrbftnrlAn5p2XocyuXPYz8KSnH_fSOzOxqU4Zs1Uzslcgb9zdEyR3iTAJDlu02yyS6LjrRyTp6k3hvkALSpnakmVpbeIu6XgjneqWWuw3rFmmcgeupSsqt5wQ","version":1}} -->
