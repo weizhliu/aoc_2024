@@ -1,0 +1,80 @@
+<!-- livebook:{"hub_id":"team-weiz"} -->
+
+# Day07
+
+```elixir
+example = """
+190: 10 19
+3267: 81 40 27
+83: 17 5
+156: 15 6
+7290: 6 8 6 15
+161011: 16 10 13
+192: 17 8 14
+21037: 9 7 18 13
+292: 11 6 16 20
+"""
+
+```
+
+## Section
+
+```elixir
+defmodule Day07 do
+  def parse_input(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Enum.map(fn row ->
+      [raw_target, raw_numbers] = String.split(row, ": ", trim: true)
+      target = String.to_integer(raw_target)
+
+      numbers =
+        raw_numbers
+        |> String.split(" ", trim: true)
+        |> Enum.map(&String.to_integer/1)
+
+      {target, numbers}
+    end)
+  end
+
+  def part1(input) do
+    parse_input(input)
+    |> Enum.map(fn {target, numbers} ->
+      solve(numbers, [:add, :mult]) |> Enum.find(&(&1 == target))
+    end)
+    |> Enum.filter(& &1)
+    |> Enum.sum()
+  end
+
+  def part2(input) do
+    parse_input(input)
+    |> Enum.map(fn {target, numbers} ->
+      solve(numbers, [:add, :mult, :concat]) |> Enum.find(&(&1 == target))
+    end)
+    |> Enum.filter(& &1)
+    |> Enum.sum()
+  end
+
+  def solve(numbers, operators) do
+    numbers
+    |> Enum.reduce([], fn
+      n, [] ->
+        [n]
+
+      n, accs ->
+        for acc <- accs, operator <- operators do
+          apply(__MODULE__, operator, [acc, n])
+        end
+    end)
+  end
+
+  def add(a, b), do: a + b
+  def mult(a, b), do: a * b
+  def concat(a, b), do: String.to_integer("#{a}#{b}")
+end
+
+Day07.part1(example)
+Day07.part2(example)
+```
+
+<!-- livebook:{"offset":1460,"stamp":{"token":"XCP.xUZrcCL-3lMTQgPURmRInWgYRq_C_Gpm1zaasq5Ob3oxiQDpQB1UrSQRRpntRA","token_signature":"qtgg0YMpB1ctnRgWMga73L-b8pTJ-iZ90fk0ICEq6mETvTzGd4j4r3i_M-BodQmYEJkOpzjyYUiwlWiwEn8_6HgByBemPovwBcsrBx_lM-1zrPvyBVRpcM32IoloSK4grxGPLiRUNxtMWcLfLm10gSadTL2McJ13JMK3xNNmhACkH61-S2fWNzKWqlhYKbVID9_aW4XiQXzdiMYbfYE2S1xpe1Q4zQ_1Vtif9GcrY4hyTPeF3ooqjDuhGa3gVkthSQR3xH4nyo6ibb_uy7bgiLQBJikNZ9M6iD4cCTklGHuB_Gx5sYLYwSNReqDyq6WQeulEwpfOt63TNi-zVhp1YQ","version":1}} -->
