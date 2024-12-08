@@ -1,0 +1,98 @@
+<!-- livebook:{"hub_id":"team-weiz"} -->
+
+# Day 08
+
+```elixir
+example = """
+............
+........0...
+.....0......
+.......0....
+....0.......
+......A.....
+............
+............
+........A...
+.........A..
+............
+............
+"""
+```
+
+## Section
+
+```elixir
+defmodule Day08 do
+  def part1(input) do
+    {map, antennas} = parse_input(input)
+
+    antennas
+    |> Map.delete(".")
+    |> Enum.map(fn {_frequency, points} ->
+      for {x1, y1} <- points, {x2, y2} <- points, {x1, y1} != {x2, y2}, reduce: [] do
+        acc ->
+          antinode = {x1 + (x1 - x2), y1 + (y1 - y2)}
+
+          case Map.get(map, antinode) do
+            nil -> acc
+            _ -> [antinode | acc]
+          end
+      end
+    end)
+    |> List.flatten()
+    |> Enum.uniq()
+    |> length()
+  end
+
+  def parse_input(input) do
+    for {row, y} <- input |> String.split("\n", trim: true) |> Enum.with_index(),
+        {p, x} <- row |> String.split("", trim: true) |> Enum.with_index(),
+        reduce: {%{}, %{}} do
+      {map, antennas} ->
+        {
+          Map.put(map, {x, y}, p),
+          Map.merge(antennas, %{p => [{x, y}]}, fn _k, v1, v2 -> v1 ++ v2 end)
+        }
+    end
+  end
+
+  def part2(input) do
+    {map, antennas} = parse_input(input)
+
+    antennas
+    |> Map.delete(".")
+    |> Enum.map(fn {_frequency, points} ->
+      for n1 <- points,
+          n2 <- points,
+          n1 != n2,
+          reduce: [] do
+        acc ->
+          resonant_nodes(n1, n2, map) ++ [n1, n2] ++ acc
+      end
+    end)
+    |> List.flatten()
+    |> Enum.uniq()
+    |> length()
+  end
+
+  def resonant_nodes(n1, n2, map), do: resonant_nodes(n1, n2, map, [], false)
+  def resonant_nodes(_, _, _, acc, true), do: acc
+
+  def resonant_nodes({x1, y1}, {x2, y2}, map, acc, _) do
+    node = {x1 + (x1 - x2), y1 + (y1 - y2)}
+
+    {acc, nomore?} =
+      case Map.get(map, node) do
+        nil -> {acc, true}
+        _ -> {[node | acc], false}
+      end
+
+    resonant_nodes(node, {x1, y1}, map, acc, nomore?)
+  end
+end
+
+Day08.part1(example)
+Day08.part2(example)
+```
+
+<!-- livebook:{"offset":2025,"stamp":{"token":"XCP.OpayqsZxCjEUowv7-3VvAFu-uJzK-EA5_V6Q9Tw3IPYsr4nYMc6eKwR7tdHWzw","token_signature":"UBf-LVqN5_YZcUc2vOi4uwoBiim6lMr1fjP5s8-WYcwyleR1ZpN_-6-Ph2_ATpDftbm_8hDeXnpgvJ8-CyJxO4thHyThdaT5Abn33E6FYgCfCVotZKxiB7vVj55JGtjAesiC00BqZue7vXgyrdwjdPZGM8NHKek-HF4U4KsFrXCDkpL0hq_-Tix8WEAk9dmFkr18fCmnG81lzYcsMFv409yURnOUJxxAahDNR4plYKn2SKUJcxF-rAb1WWS8ZahUaz7giG5MXsADMG6f2yOvM_CP-tsjgTNDWhDgIOcfOJHQ5i8SGuZx_FPwd7PUK6Qx82PW49UsEKZQVSP2FoQx9Q","version":1}} -->
