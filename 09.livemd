@@ -1,0 +1,127 @@
+<!-- livebook:{"hub_id":"team-weiz"} -->
+
+# Day09
+
+## Section
+
+```elixir
+example = "2333133121414131402"
+
+defmodule Day09 do
+  def parse_input(input) do
+    input
+    |> String.split("", trim: true)
+    |> Enum.map(&String.to_integer/1)
+    |> Enum.chunk_every(2)
+    |> Enum.with_index(fn
+      [f], i -> List.duplicate(to_string(i), f)
+      [f, s], i -> [List.duplicate(to_string(i), f), List.duplicate(".", s)]
+    end)
+    |> List.flatten()
+  end
+
+  def part1(raw_input) do
+    input = parse_input(raw_input)
+    length = Enum.count(input, &(&1 != "."))
+
+    rearrange(input, Enum.reverse(input), [], length)
+    |> Enum.with_index(fn e, i -> String.to_integer(e) * i end)
+    |> Enum.sum()
+  end
+
+  def rearrange(_, _, acc, l) when length(acc) == l, do: Enum.reverse(acc)
+  def rearrange(i, ["." | rt], acc, l), do: rearrange(i, rt, acc, l)
+  def rearrange(["." | it], [rh | rt], acc, l), do: rearrange(it, rt, [rh | acc], l)
+  def rearrange([ih | it], r, acc, l), do: rearrange(it, r, [ih | acc], l)
+
+  def parse_input2(input) do
+    input
+    |> String.split("", trim: true)
+    |> Enum.map(&String.to_integer/1)
+    |> Enum.chunk_every(2)
+    |> Enum.with_index(fn
+      [f], i -> {f, i}
+      [f, s], i -> [{f, i}, {s, "."}]
+    end)
+    |> Enum.reduce([], fn
+      [a, b], acc -> [b | [a | acc]]
+      last, acc -> [last | acc]
+    end)
+    |> Enum.reverse()
+  end
+
+  def part2(raw_input) do
+    input = parse_input2(raw_input)
+
+    merge(input)
+    |> Enum.map(fn {size, i} -> List.duplicate(i, size) end)
+    |> List.flatten()
+    |> Enum.with_index(fn
+      ".", _i -> 0
+      e, i -> e * i
+    end)
+    |> Enum.sum()
+  end
+
+  def merge(input) do
+    input
+    |> Enum.reverse()
+    |> Enum.reject(&(elem(&1, 1) == "."))
+    |> Enum.reduce(input, fn {size, data}, list ->
+      list
+      |> move_item({size, data})
+      |> Enum.reverse()
+      |> merge_gaps()
+    end)
+  end
+
+  def move_item(list, {size, data}) do
+    Enum.reduce(list, {[], :find}, fn
+      {slot_size, "."}, {items, :find} ->
+        cond do
+          slot_size > size ->
+            {[{slot_size - size, "."} | [{size, data} | items]], :hit}
+
+          slot_size == size ->
+            {[{size, data} | items], :hit}
+
+          true ->
+            {[{slot_size, "."} | items], :find}
+        end
+
+      {^size, ^data}, {items, :hit} ->
+        {[{size, "."} | items], :hit}
+
+      {^size, ^data}, {items, :find} ->
+        {[{size, data} | items], :hit}
+
+      item, {items, status} ->
+        {[item | items], status}
+    end)
+    |> elem(0)
+  end
+
+  def merge_gaps(list) do
+    list
+    |> merge_gaps([])
+    |> Enum.reverse()
+  end
+
+  def merge_gaps([], acc), do: acc
+  def merge_gaps([{h1s, "."}, {h2s, "."}], acc), do: [{h1s + h2s, "."} | acc]
+  def merge_gaps([h1, h2], acc), do: [h2 | [h1 | acc]]
+
+  def merge_gaps([{h1s, "."} | [{h2s, "."} | rest]], acc),
+    do: merge_gaps(rest, [{h1s + h2s, "."} | acc])
+
+  def merge_gaps([h | rest], acc), do: merge_gaps(rest, [h | acc])
+end
+
+
+
+Day09.part1(example)
+Day09.part2(example)
+
+```
+
+<!-- livebook:{"offset":3023,"stamp":{"token":"XCP.PA5y-sm1yLyv1KOWxwSORru1iRRgqdYjubXB4h_AYnXHKORI--bWFdvzE6jXLw","token_signature":"WLRM2_IvfYj2kncPfWG3h_aFFTP07vBN3UZWAGr_R-PLPlAjoDMlSpctvgyKcEFOWvZeYyKbxGWqj7QLYNpD7-bpE0NOafHwg4PmIjA_N0QoLu9vUvBWCpFnFRgJsnrMrIwLZ2v6TA5EAiAVU9NT5SF5w1O3NxEs0byjAThDmdbqx8JrYSiMXUNt_OcxGki85iZP_dpmgISywck61lDPBGzFHUYd2XmEzhRxrkdmlMwUEHZbZAM3gI3v3cK2gTlxX6BMtEggRyS8PZGwODPbIqwO8_KaUjbUzBKsN-DhHqxFy8f2LT2AVTbfMu64bWdidz9x_wK51MwESdUax8C1mg","version":1}} -->
