@@ -1,0 +1,80 @@
+<!-- livebook:{"hub_id":"team-weiz"} -->
+
+# Day 10
+
+## Section
+
+```elixir
+example = """
+89010123
+78121874
+87430965
+96549874
+45678903
+32019012
+01329801
+10456732
+"""
+
+defmodule Day10 do
+  def get_map(input) do
+    for {row, y} <- input |> String.split("\n", trim: true) |> Enum.with_index(),
+        {h, x} <- row |> String.split("", trim: true) |> Enum.with_index(),
+        into: %{} do
+      {{x, y}, String.to_integer(h)}
+    end
+  end
+
+  def get_starts(input) do
+    for {row, y} <- input |> String.split("\n", trim: true) |> Enum.with_index(),
+        {"0", x} <- row |> String.split("", trim: true) |> Enum.with_index() do
+      {x, y}
+    end
+  end
+
+  def solve(input, part) do
+    map = get_map(input)
+    starts = get_starts(input)
+
+    starts
+    |> Enum.map(fn {x, y} ->
+      move(x, y, 0, map, [])
+      |> List.flatten()
+      |> Enum.filter(& &1)
+      |> Enum.uniq_by(fn result ->
+        case part do
+          :part1 -> result.finished_at
+          :part2 -> result
+        end
+      end)
+      |> length()
+    end)
+    |> Enum.sum()
+  end
+
+  def move(x, y, h, map, path) do
+    for {nx, ny} <- [{x, y + 1}, {x, y - 1}, {x + 1, y}, {x - 1, y}] do
+      nh = Map.get(map, {nx, ny})
+
+      cond do
+        is_nil(nh) ->
+          nil
+
+        nh == 9 && nh - h == 1 ->
+          %{finished_at: {nx, ny}, path: [{nx, ny, nh} | path]}
+
+        nh - h == 1 ->
+          move(nx, ny, nh, map, [{nx, ny, nh} | path])
+
+        true ->
+          nil
+      end
+    end
+  end
+end
+
+Day10.solve(example, :part1)
+Day10.solve(example, :part2)
+```
+
+<!-- livebook:{"offset":1549,"stamp":{"token":"XCP.Dzs-Tbcw2Z6Y-F0pDxnG-AxbYwPAwEZX8wT1XtM84hMhpPshvJ-o6o8oSd0Y0A","token_signature":"xY28ffwZwdGE1s3uhbCfLLvy_CG_Q1_tNQPtKNiyK20qSUx1HAJop8dQK1A4PNrl4vQARYGYbEw4XNT22fN_cFqCTwXY4zIL6_u_eBWZ5pRZjRRLDd0YpNYrWeHzMXMTLpOBTal5A5o9IbNievptFjEiTsxZLskp3Sbr0yu1t8sYDNZNcGw6T0-hgvK8PORWBlJeDmbo5JZfiCEGH7sXNWV3x4MQYqVKF9Vw06-JzxYAgw3QcFNQcjJ6cv3eE7_NJbbktFs4ImCSiEsUMdORIizsXtUWVkrkSwc7XiyUYqK5s13-9g4gJsd1UbJ_V8BMzaFJJBunWFECAmigvPwrOA","version":1}} -->
