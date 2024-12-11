@@ -9,53 +9,45 @@ example = "125 17"
 input = "9759 0 256219 60 1175776 113 6 92833"
 
 defmodule Day11 do
-  def lookup(cache, number, depth) do
-    case :ets.lookup(cache, {number, depth}) do
-      [{_k, v}] -> v
-      _ -> nil
-    end
-  end
-
-  def insert(cache, number, depth, v) do
-    true = :ets.insert_new(cache, {{number, depth}, v})
-  end
-
   def solve(input, target_depth) do
-    cache = :ets.new(:cache, [])
-
     line =
       input
       |> String.split(" ", trim: true)
       |> Enum.map(&String.to_integer/1)
+      |> Enum.map(&{&1, 0})
 
-    line
-    |> Enum.map(&blink(&1, 0, cache, target_depth))
-    |> Enum.sum()
+    {acc, _cache} = blink(line, %{}, target_depth, 0)
+    acc
   end
 
-  def blink(_num, depth, _, depth), do: 1
+  def blink([], cache, _, acc) do
+    {acc, cache}
+  end
 
-  def blink(num, depth, cache, target_depth) do
+  def blink([{h, depth} | t], cache, target_depth, acc) do
     cond do
-      num == 0 ->
-        blink(1, depth + 1, cache, target_depth)
+      depth == target_depth ->
+        blink(t, cache, target_depth, acc + 1)
 
-      rem(len = String.length(sh = to_string(num)), 2) == 0 ->
-        {slh, srh} = String.split_at(sh, div(len, 2))
+      h == 0 ->
+        blink([{1, depth + 1} | t], cache, target_depth, acc)
 
-        if sum = lookup(cache, num, depth) do
-          sum
+      rem(len = String.length(sh = to_string(h)), 2) == 0 ->
+        if sum = Map.get(cache, {h, depth}) do
+          blink(t, cache, target_depth, sum + acc)
         else
-          sum =
-            blink(String.to_integer(srh), depth + 1, cache, target_depth) +
-              blink(String.to_integer(slh), depth + 1, cache, target_depth)
+          {slh, srh} = String.split_at(sh, div(len, 2))
+          lh = String.to_integer(slh)
+          rh = String.to_integer(srh)
 
-          insert(cache, num, depth, sum)
-          sum
+          {sum, cache} = blink([{lh, depth + 1}, {rh, depth + 1}], cache, target_depth, 0)
+          cache = Map.put(cache, {h, depth}, sum)
+
+          blink(t, cache, target_depth, sum + acc)
         end
 
       true ->
-        blink(num * 2024, depth + 1, cache, target_depth)
+        blink([{h * 2024, depth + 1} | t], cache, target_depth, acc)
     end
   end
 end
@@ -64,4 +56,4 @@ IO.inspect(Day11.solve(input, 25), label: "Part 1")
 IO.inspect(Day11.solve(input, 75), label: "Part 2")
 ```
 
-<!-- livebook:{"offset":1457,"stamp":{"token":"XCP.Ys4D-8YNLDuIgKXJN9gZrQFgg8zldcdosarHGI8oS_K3bq7pgvySLT4WMKtuPg","token_signature":"kbnxtXEelEVxfpRKVeTD5bGdYEGEbByRYDLbZVbnk2wHtBe0StMxwhg5GGYKAcgwGzcxWjpLPPegeWy8AZaC2P400sAXHXrjGtihyEG5zFtqgQ8wbg69766klWXe1t87cljX-EkZnR9SrDXfOd1O2aIQlvV2RgjMFaxXHZYxzr3OD95J61XMaV4OsVaNiYfiNAki8fKIlVdwdaQoFKWKHuQHr4tzA85t3fixnBUfg9pk0QQCUxnG8thmiMrKmv6-kvEwV0vjyXjKFWMUTQN60Y61RasqzxXD00qQKP4e7d54B1l0vzxWWwnA7f4aPD_G98Z6qlX2gJqwWz-77m4hBQ","version":1}} -->
+<!-- livebook:{"offset":1403,"stamp":{"token":"XCP.0ZZhzhuUt-uanxwbuxMpmHYGXH9eq_eWmPISGkjF5rNi9SYT5Nzv3mptkWt9ig","token_signature":"m7nIWrHSrIxUtlpFpqxrXjUK-8x_qUSD8PvlRZGTYSufttUFGcvLE1d6YmC-4HrHXhybTITtaxQ9cjMmNruHFIFmBnn5XEDR8k7B8XVXlDWcEqnBjQ__F9JZHMM62Tl1T6eWhtlQ_kr29FFXZmZOUKHadI3v41wFdvGIJgG9m7YJ8rfyzK5JuOLo43vDooOeGYA9W0cKz4y8BbdhKmRu_TRvg58qZQgA-Kqh-rvTmgKgeItSyDh1uO1MRSdt7Th4KZQPyJJrQBQDoiIU0H4KDfjr0VzHbTyRLy3w1PIftBSiXFQNc5MCxtIgPu0XyMDklkviLtWVjQOQe3pYmnXrKg","version":1}} -->
