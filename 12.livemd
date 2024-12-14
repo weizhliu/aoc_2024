@@ -1,0 +1,178 @@
+<!-- livebook:{"hub_id":"team-weiz"} -->
+
+# Day 12
+
+## Section
+
+```elixir
+example = """
+RRRRIICCFF
+RRRRIICCCF
+VVRRRCCFFF
+VVRCCCJFFF
+VVVVCJJCFE
+VVIVCCJJEE
+VVIIICJJEE
+MIIIIIJJEE
+MIIISIJEEE
+MMMISSJEEE
+"""
+
+defmodule Day12 do
+  def map(input) do
+    for {row, y} <- String.split(input, "\n", trim: true) |> Enum.with_index(),
+        {p, x} <- String.split(row, "", trim: true) |> Enum.with_index(),
+        into: %{} do
+      {{x, y, nil}, p}
+    end
+  end
+
+  def part1(input) do
+    map = map(input)
+
+    regions(map, map, [Enum.at(map, 0)], [], [], [])
+    |> Enum.map(fn {list, sides} ->
+      length(list) * length(sides |> Enum.uniq())
+    end)
+    |> Enum.sum()
+  end
+
+  def part2(input) do
+    map = map(input)
+
+    regions(map, map, [Enum.at(map, 0)], [], [], [])
+    |> Enum.map(fn {list, sides} ->
+      length(list) * (count_v(sides) + count_h(sides) + length(cross(sides)) * 2)
+    end)
+    |> Enum.sum()
+  end
+
+  def cross(sides) do
+    sides = sides |> Enum.uniq()
+
+    for {ax, ay, :v} <- sides,
+        {bx, by, :v} <- sides,
+        {cx, cy, :h} <- sides,
+        {dx, dy, :h} <- sides,
+        ax == bx,
+        by - ay == 1,
+        cy == dy,
+        dx - cx == 1,
+        bx == dx,
+        by == dy do
+      {cx, ay}
+    end
+  end
+
+  def count_v(list) do
+    list
+    |> Enum.uniq()
+    |> Enum.filter(&(elem(&1, 2) == :v))
+    |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+    |> Map.values()
+    |> Enum.map(fn line ->
+      line
+      |> Enum.sort()
+      |> group([])
+      |> length()
+    end)
+    |> Enum.sum()
+  end
+
+  def count_h(list) do
+    list
+    |> Enum.uniq()
+    |> Enum.filter(&(elem(&1, 2) == :h))
+    |> Enum.group_by(&elem(&1, 1), &elem(&1, 0))
+    |> Map.values()
+    |> Enum.map(fn line ->
+      line
+      |> Enum.sort()
+      |> group([])
+      |> length()
+    end)
+    |> Enum.sum()
+  end
+
+  def group([], groups), do: groups
+
+  def group([h | t], []) do
+    group(t, [[h]])
+  end
+
+  def group([h | t], groups) do
+    new_groups =
+      Enum.map(groups, fn g ->
+        if Enum.find(g, fn i -> abs(h - i) == 1 end) do
+          [h | g]
+        else
+          g
+        end
+      end)
+
+    if groups == new_groups do
+      group(t, [[h] | groups])
+    else
+      group(t, new_groups)
+    end
+  end
+
+  def regions(map, dmap, [], plots, sides, acc) do
+    if p = Enum.at(dmap, 0) do
+      regions(map, dmap, [p], [], [], [{plots, sides} | acc])
+    else
+      [{plots, sides} | acc]
+    end
+  end
+
+  def regions(map, dmap, [{{x, y, adj}, v} = h | t], plots, sides, acc) do
+    case {Map.get(dmap, {x, y, nil}), Map.get(map, {x, y, nil})} do
+      {nil, ^v} ->
+        regions(map, dmap, t, plots, sides, acc)
+
+      {^v, _} ->
+        directions =
+          if adj do
+            {ladx, lady} = adj
+            reverse = [{ladx * -1, lady * -1}]
+            [{1, 0}, {-1, 0}, {0, 1}, {0, -1}] -- reverse
+          else
+            [{1, 0}, {-1, 0}, {0, 1}, {0, -1}]
+          end
+
+        pns =
+          for {adx, ady} = adj <- directions do
+            {{x + adx, y + ady, adj}, v}
+          end
+
+        regions(map, Map.delete(dmap, {x, y, nil}), pns ++ t, [h | plots], sides, acc)
+
+      _ ->
+        sides =
+          case adj do
+            {1, 0} ->
+              [{x, y, :v} | sides]
+
+            {-1, 0} ->
+              [{x + 1, y, :v} | sides]
+
+            {0, 1} ->
+              [{x, y, :h} | sides]
+
+            {0, -1} ->
+              [{x, y + 1, :h} | sides]
+
+            nil ->
+              sides
+          end
+
+        regions(map, dmap, t, plots, sides, acc)
+    end
+  end
+end
+
+Day12.part1(example)
+Day12.part2(example)
+```
+
+<!-- livebook:{"offset":3584,"stamp":{"token":"XCP.Pn6DfwdLUdZ9IRMyPkrK6M9jJ52YQ8Wzk8uUGsoa15g_qIEDcdGVT2FYYibjNw","token_signature":"EErrOEOIwMcBF2_15q-2gaP8Xet8fNiQS8Dy8efJxeBIwDPpt6b69sJ5imvLG4WeO41KMHnAo7xTVIEmr_u9KfavKh3ftOv9Wmz3TzfHAVSFMsbsZwsWJaC_PkqzCJv5NktNmJ_xby4RA9b3gssGX783_KxR3xupbjlSglusxzQ99Ubui-QFtdsGGEuAYAVa21yulsESd-RhuezMF6H-0B76VPVH6-WSHHVYvHvQTjDXffTkoWeHq2V1OWhkXZMZ2J28hvwvowY_u5Y8ehDZSPav421ll08HvKHsp5KBA2AOU-E_t8kv4yCR55MQi6Dw4lOooaG6t6DmWRcm_BuRTQ","version":1}} -->
