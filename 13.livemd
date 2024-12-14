@@ -1,0 +1,97 @@
+<!-- livebook:{"hub_id":"team-weiz"} -->
+
+# Day13
+
+## Section
+
+```elixir
+example = """
+Button A: X+94, Y+34
+Button B: X+22, Y+67
+Prize: X=8400, Y=5400
+
+Button A: X+26, Y+66
+Button B: X+67, Y+21
+Prize: X=12748, Y=12176
+
+Button A: X+17, Y+86
+Button B: X+84, Y+37
+Prize: X=7870, Y=6450
+
+Button A: X+69, Y+23
+Button B: X+27, Y+71
+Prize: X=18641, Y=10279
+"""
+
+defmodule Day13 do
+  def parse_input(input, part \\ :one) do
+    machines = String.split(input, "\n\n", trim: true)
+
+    Enum.map(machines, fn raw_machine ->
+      [ax, ay, bx, by, px, py] =
+        String.split(raw_machine, "\n", trim: true)
+        |> Enum.map(&Regex.scan(~r/\d+/, &1))
+        |> List.flatten()
+        |> Enum.map(&String.to_integer/1)
+
+      if part == :two do
+        [ax, ay, bx, by, px + 10_000_000_000_000, py + 10_000_000_000_000]
+      else
+        [ax, ay, bx, by, px, py]
+      end
+    end)
+  end
+
+  def part1(input) do
+    machines = parse_input(input)
+
+    machines
+    |> Enum.map(fn machine ->
+      machine
+      |> min_token()
+      |> Enum.map(fn {a, b} -> a * 3 + b end)
+      |> Enum.sort()
+      |> List.first()
+    end)
+    |> Enum.filter(& &1)
+    |> Enum.sum()
+  end
+
+  def min_token(machine) do
+    [ax, ay, bx, by, px, py] = machine
+
+    for a <- 1..lo(div(px, ax), div(py, ay)),
+        b <- 1..lo(div(px, bx), div(py, by)),
+        a * ax + b * bx == px,
+        a * ay + b * by == py do
+      {a, b}
+    end
+  end
+
+  def lo(a, b) do
+    if a > b, do: a, else: b
+  end
+
+  def part2(input) do
+    machines = parse_input(input, :two)
+
+    machines
+    |> Enum.map(fn machine ->
+      [ax, ay, bx, by, px, py] = machine
+
+      a = div(px * by - bx * py, ax * by - bx * ay)
+      b = div(px * ay - py * ax, ay * bx - by * ax)
+
+      a * ax + b * bx == px && a * ay + b * by == py && {a, b}
+    end)
+    |> Enum.filter(& &1)
+    |> Enum.map(fn {a, b} -> a * 3 + b end)
+    |> Enum.sum()
+  end
+end
+
+Day13.part1(example)
+Day13.part2(example)
+```
+
+<!-- livebook:{"offset":1941,"stamp":{"token":"XCP.lmWjoZEOSkVC3bieuo3zEUtM2NIBrLfVPxrRQGiNFERd_qpoaJve3jzva965Bg","token_signature":"u1wR6Fd0JreDw5dTn9x5x8U8_I5-kquvjr5KOPcSWqIPbYcV1kjCAlnt_IYs5lHkradxWFZzFUCn_uvzFIcGz4cy9-xPkR9mCCEsrDNhQ1ayF0R9HdyxcV9ueY5OuGtijQJFfr7mtt7Pw1BtjFLyG2Kzs7oRnGid_xoVei_BEjk10K-W1s_QH8ofhbPSVwYrEocCG6HyKvjBdWrgLxJuxKh0Qw_Ho05dYIp_2KhPVQJzxupHNiPa1z2UUm4UAizaP9xkSsZFVIW3TDiaivpdbFrYDLAZ8ePAJ8E6QrW_jBByv21Znbs7tVYaI0vUo-PeQbczF_DJgzMEtpS8m-yJYQ","version":1}} -->
